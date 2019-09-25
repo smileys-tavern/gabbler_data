@@ -8,13 +8,13 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :email, :string
       add :password_hash, :string
       add :confirmation_token, :string
-      add :confirmed_at, :datetime
-      add :confirmation_sent_at, :datetime
+      add :confirmed_at, :timestamptz
+      add :confirmation_sent_at, :timestamptz
       add :reputation, :integer
       add :gifts, :integer
       add :moderating, {:array, :map}
       
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:users, [:name])
     create unique_index(:users, [:email])
@@ -29,7 +29,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :reputation, :integer
       add :age, :integer
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:rooms, [:name])
     create index(:rooms, [:type])
@@ -50,7 +50,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :score_private, :integer
       add :score_alltime, :integer
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create index(:posts, [:user_id_post])
     create index(:posts, [:score_public])
@@ -60,7 +60,7 @@ defmodule GabblerData.Repo.Migrations.Init do
     create index(:posts, [:room_id])
     create index(:posts, [:parent_id])
     create index(:posts, [:parent_type])
-    create index(:posts, [:parent_type, :parentid])
+    create index(:posts, [:parent_type, :parent_id])
 
     create table(:post_metas) do
       add :user_id, :integer
@@ -70,7 +70,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :thumb, :string
       add :tags, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:post_metas, [:post_id])
     create index(:post_metas, [:user_id])
@@ -80,7 +80,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :hash, :string
       add :post_id, :int
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create index(:anonymous_posts, [:hash])
     create index(:anonymous_posts, [:post_id])
@@ -91,7 +91,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :post_id, :integer
       add :vote, :integer
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:votes, [:user_id, :post_id])
     create index(:votes, [:post_id])
@@ -102,7 +102,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :room_id, :integer
       add :type, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:moderator_listings, [:user_id, :room_id])
     create index(:moderator_listings, [:user_id])
@@ -113,7 +113,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :room_id, :string
       add :type, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:user_subscriptions, [:user_id, :room_id])
     create index(:user_subscriptions, [:user_id])
@@ -123,7 +123,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :user_id, :string
       add :room_id, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:user_room_allows, [:user_id, :room_id])
     create index(:user_room_allows, [:user_id])
@@ -135,7 +135,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :type, :string
       add :callback_module, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create unique_index(:registered_bots, [:name])
     create index(:registered_bots, [:type])
@@ -145,7 +145,7 @@ defmodule GabblerData.Repo.Migrations.Init do
       add :type, :string
       add :meta, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
     create index(:registered_bot_metas, [:bot_id])
     create index(:registered_bot_metas, [:type])
