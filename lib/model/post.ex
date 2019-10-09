@@ -22,10 +22,11 @@ defmodule GabblerData.Post do
     |> cast(params, [
       :user_id_post, :title, :body, :room_id, :parent_id, :parent_type, 
       :age, :hash, :score_public, :score_private, :score_alltime])
-    |> validate_required([:title])
+    |> validate_required([:user_id_post, :title], [:trim])
     |> validate_length(:title, min: 2)
     |> validate_length(:title, max: 350)
     |> validate_format(:title, ~r/^[a-zA-Z0-9 \-\–\.,\/'’‘%|?!:\)\(#&;]+$/)
+    |> validate_length(:body, min: 1)
     |> validate_length(:body, max: 11099)
   end
 

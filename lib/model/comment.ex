@@ -1,7 +1,7 @@
 defmodule GabblerData.Comment do
   use GabblerData.Data, :model
 
-  schema "comments" do
+  schema "posts" do
     field :user_id_post, :integer
     field :title, :string
     field :body, :string
@@ -10,9 +10,10 @@ defmodule GabblerData.Comment do
     field :parent_type, :string
     field :age, :integer
     field :hash, :string
-    field :vote_public, :integer
-    field :vote_private, :integer
-    field :vote_alltime, :integer
+    field :hash_op, :string, virtual: true
+    field :score_public, :integer
+    field :score_private, :integer
+    field :score_alltime, :integer
     field :depth, :integer
     field :name, :string
 
@@ -23,7 +24,9 @@ defmodule GabblerData.Comment do
     struct
     |> cast(params, [
       :user_id_post, :title, :body, :room_id, :parent_id, :parent_type, 
-      :age, :hash, :vote_public, :vote_private, :vote_alltime])
+      :age, :hash, :score_public, :score_private, :score_alltime])
+    |> validate_required([:user_id_post, :body, :parent_id], [:trim])
+    |> validate_length(:body, min: 2)
     |> validate_length(:body, max: 500)
   end
 end

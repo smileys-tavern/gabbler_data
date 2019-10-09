@@ -3,7 +3,7 @@ defmodule GabblerData.Query.Room do
   Query the room using behaviour specification to ensure implementation has full
   coverage required.
   """
-  @behaviour GabblerData.Default.RoomBehaviour
+  @behaviour GabblerData.Behaviour.QueryRoom
 
   alias GabblerData.Room
 

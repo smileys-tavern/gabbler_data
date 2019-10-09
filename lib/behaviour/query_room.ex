@@ -1,4 +1,4 @@
-defmodule GabblerData.Default.RoomBehaviour do
+defmodule GabblerData.Behaviour.QueryRoom do
   @moduledoc """
   The Gabbler Room is an area of thematic content served at [website url]/r/[room name]. This
   set of behaviors must be implemented by the data dependency for querying Rooms. This behavior
