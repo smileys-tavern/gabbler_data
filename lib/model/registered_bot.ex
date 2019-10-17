@@ -3,7 +3,7 @@ defmodule GabblerData.RegisteredBot do
 
   schema "registered_bots" do
     field :name, :string
-    field :user_id, :string
+    field :user_id, :integer
     field :type, :string
     field :callback_module, :string
 

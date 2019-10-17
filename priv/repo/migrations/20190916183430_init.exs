@@ -87,7 +87,7 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # VOTES
     create table(:votes) do
-      add :user_id, :string
+      add :user_id, :integer
       add :post_id, :integer
       add :vote, :integer
 
@@ -97,20 +97,20 @@ defmodule GabblerData.Repo.Migrations.Init do
     create index(:votes, [:post_id])
 
     # MODERATOR LISTINGS
-    create table(:moderator_listings) do
+    create table(:user_moderating) do
       add :user_id, :integer
       add :room_id, :integer
       add :type, :string
 
       timestamps(type: :timestamptz)
     end
-    create unique_index(:moderator_listings, [:user_id, :room_id])
-    create index(:moderator_listings, [:user_id])
+    create unique_index(:user_moderating, [:user_id, :room_id])
+    create index(:user_moderating, [:user_id])
 
     # USER SUBSCRIPTIONS
     create table(:user_subscriptions) do
       add :user_id, :integer
-      add :room_id, :string
+      add :room_id, :integer
       add :type, :string
 
       timestamps(type: :timestamptz)
@@ -120,8 +120,8 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # USER ROOM ALLOWS
     create table(:user_room_allows) do
-      add :user_id, :string
-      add :room_id, :string
+      add :user_id, :integer
+      add :room_id, :integer
 
       timestamps(type: :timestamptz)
     end
@@ -131,7 +131,7 @@ defmodule GabblerData.Repo.Migrations.Init do
     # REGISTERED BOTS
     create table(:registered_bots) do
       add :name, :string
-      add :user_id, :string
+      add :user_id, :integer
       add :type, :string
       add :callback_module, :string
 

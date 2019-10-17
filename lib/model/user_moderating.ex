@@ -1,7 +1,7 @@
-defmodule GabblerData.ModeratorListing do
+defmodule GabblerData.UserModerating do
   use GabblerData.Data, :model
 
-  schema "moderator_listings" do
+  schema "user_moderating" do
     field :user_id, :integer
     field :room_id, :integer
     field :type, :string
@@ -16,6 +16,6 @@ defmodule GabblerData.ModeratorListing do
     struct
     |> cast(params, [:user_id, :room_id, :type])
     |> validate_required([:user_id, :room_id, :type])
-    |> unique_constraint(:user_id, name: :moderator_listings_user_id_room_id_index)
+    |> unique_constraint(:user_id, name: :user_moderating_user_id_room_id_index)
   end
 end

@@ -8,6 +8,8 @@ defmodule GabblerData.Query.Post do
   import Ecto.Query
 
   alias GabblerData.{Post, Room, PostMeta, Comment}
+  alias GabblerData.Query.Room, as: QueryRoom
+  alias GabblerData.Query.User, as: QueryUser
 
   alias GabblerData.Repo
 
@@ -31,6 +33,20 @@ defmodule GabblerData.Query.Post do
     |> Repo.all()
 
     Enum.reduce(post_metas, %{}, fn %{post_id: post_id} = post_meta, acc -> Map.put(acc, post_id, post_meta) end)
+  end
+
+  @impl true
+  def map_rooms(posts) do
+    Enum.reduce(posts, %{}, fn %{id: post_id, room_id: room_id}, acc -> 
+      Map.put(acc, post_id, QueryRoom.get(room_id))
+    end)
+  end
+
+  @impl true
+  def map_users(posts) do
+    Enum.reduce(posts, %{}, fn %{id: post_id, user_id_post: user_id}, acc -> 
+      Map.put(acc, post_id, QueryUser.get(user_id))
+    end)
   end
 
   @impl true
@@ -58,6 +74,19 @@ defmodule GabblerData.Query.Post do
 
   @impl true
   def update_meta(changeset), do: Repo.update(changeset)
+
+  @impl true
+  def increment_score(%{id: id}, amt, nil) do
+    Post
+    |> where(id: ^id)
+    |> Repo.update_all(inc: [score_public: amt, score_private: amt, score_alltime: abs(amt)])
+  end
+
+  def increment_score(%{id: id}, amt, amt_priv) do
+    Post 
+    |> where(id: ^id)
+    |> Repo.update_all(inc: [score_public: amt, score_private: amt_priv, score_alltime: amt_priv])
+  end
 
   @impl true
   def thread(%Post{id: id}, :new), do: thread_query(
@@ -110,6 +139,14 @@ defmodule GabblerData.Query.Post do
     |> where(parent_id: ^id)
 
     list(query, opts)
+  end
+
+  defp list(query, [{:only, :op}|opts]) do
+    list(where(query, [p], p.parent_type == "room"), opts)
+  end
+
+  defp list(query, [{:only, :comment}|opts]) do
+    list(where(query, [p], p.parent_type == "comment"), opts)
   end
 
   defp list(query, [{:order_by, :updated}|opts]) do

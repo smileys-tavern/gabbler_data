@@ -2,7 +2,7 @@ defmodule GabblerData.Vote do
   use GabblerData.Data, :model
 
   schema "votes" do
-    field :user_id, :string
+    field :user_id, :integer
     field :post_id, :integer
     field :vote, :string
 

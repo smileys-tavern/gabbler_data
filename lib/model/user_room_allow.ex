@@ -2,8 +2,8 @@ defmodule GabblerData.UserRoomAllow do
   use GabblerData.Data, :model
 
   schema "user_room_allows" do
-    field :user_id, :string
-    field :room_id, :string
+    field :user_id, :integer
+    field :room_id, :integer
 
     timestamps(type: :utc_datetime)
   end

@@ -24,6 +24,16 @@ defmodule GabblerData.Behaviour.QueryPost do
   @callback map_meta([%Post{}]) :: %{}
 
   @doc """
+  Retrieve a map of rooms keyed by the posts
+  """
+  @callback map_rooms([%Post{}]) :: %{}
+
+  @doc """
+  Retrieve a map of users keyed by the posts
+  """
+  @callback map_users([%Post{}]) :: %{}
+
+  @doc """
   Create a Post using the Post and PostMeta changesets.
   """
   @callback create(%{}, %{}) :: {:ok, {%Post{}, %PostMeta{}}} | {:error, %{}}
@@ -42,6 +52,12 @@ defmodule GabblerData.Behaviour.QueryPost do
   Updates a Posts Meta. Unlike create, this can be updated separately.
   """
   @callback update_meta(%{}) :: {:ok, %PostMeta{}} | {:error, %{}}
+
+  @doc """
+  Move the score of a post up or down. Takes a public and private amount. Public score should be
+  incremented 1 or -1 generally and private can be any integer based on scoring algorithm.
+  """
+  @callback increment_score(%Post{}, Integer, Integer) :: {:ok, %Post{}} | {:error, %{}}
 
   @doc """
   Return a posts recusive comment thread. Takes a parent post and atom representing the query mode.
