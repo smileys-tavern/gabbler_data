@@ -23,4 +23,9 @@ defmodule GabblerData.Behaviour.LogicMeta do
   Format the tags how they should be standardized across Web
   """
   @callback format_tags(String.t) :: String.t
+
+  @doc """
+  Filter the tags according to any project rules and return a list of surviving tags
+  """
+  @callback filter_tags(String.t | [String.t]) :: []
 end
