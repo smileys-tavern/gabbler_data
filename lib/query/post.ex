@@ -15,6 +15,7 @@ defmodule GabblerData.Query.Post do
 
   @thread_query_max 20
   @thread_query_focus_max 20
+  @thread_query_hard_limit 50
 
 
   @impl true
@@ -89,31 +90,68 @@ defmodule GabblerData.Query.Post do
   end
 
   @impl true
-  def thread(%Post{id: id}, :new), do: thread_query(
-    Integer.to_string(id), "(p.id * -1)::bigint", Integer.to_string(@thread_query_max))
-  def thread(%Post{id: id}, :focus), do: thread_query(
-    Integer.to_string(id), "(p.score_private * -1)::bigint", Integer.to_string(@thread_query_focus_max))
-  def thread(%Post{id: id}, _), do: thread_query(
-    Integer.to_string(id), "(p.score_private * -1)::bigint", Integer.to_string(@thread_query_max))
+  def comment_count(%Post{id: id}) do
+    Post
+    |> where(parent_id: ^id)
+    |> Repo.aggregate(:count, :id)
+  end
 
-  defp thread_query(post_id_string, sort_modifier, limit_string) do
+  @impl true
+  def page_count(%Post{} = post), do:
+    (comment_count(post) / @thread_query_max)
+    |> ceil()
+  
+  @impl true
+  def thread(post, action, page \\ 1)
+
+  def thread(%Post{id: id}, :new, page) do
+    thread_query(
+      Integer.to_string(id),
+      "(p.id * -1)::bigint", 
+      Integer.to_string(@thread_query_max), 
+      Integer.to_string((page - 1) * @thread_query_max))
+  end
+
+  def thread(%Post{id: id}, :focus, page) do
+    thread_query(
+      Integer.to_string(id), 
+      "(p.score_private * -1)::bigint", 
+      Integer.to_string(@thread_query_focus_max),
+      Integer.to_string((page - 1) * @thread_query_max))
+  end
+
+  def thread(%Post{id: id}, _, page) do 
+    thread_query(
+      Integer.to_string(id), 
+      "(p.score_private * -1)::bigint", 
+      Integer.to_string(@thread_query_max),
+      Integer.to_string((page - 1) * @thread_query_max))
+  end
+
+
+  # PRIVATE FUNCTIONS
+  ###################
+  defp thread_query(post_id_string, sort_modifier, limit_string, offset_string) do
+    hard_limit = Integer.to_string(@thread_query_hard_limit)
+
     qry = "
       WITH RECURSIVE posts_r(id, user_id_post, room_id, parent_id, parent_type, body, age, hash, score_public, 
         score_private, inserted_at, depth, path) AS (
-            SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, body, age, hash, score_public, 
-              score_private, inserted_at, 1, ARRAY[#{sort_modifier}, p.id]
-            FROM posts p
-            WHERE p.parent_id = #{post_id_string} AND p.parent_type != 'room'
-          UNION ALL
-            SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, p.body, p.age, p.hash, p.score_public, 
-              p.score_private, p.inserted_at, pr.depth + 1, path || #{sort_modifier} || p.id
-            FROM posts p, posts_r pr
+          (SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, body, age, hash, score_public, 
+            score_private, inserted_at, 1, ARRAY[#{sort_modifier}, p.id]
+          FROM posts p
+          WHERE p.parent_id = #{post_id_string} AND p.parent_type != 'room'
+          LIMIT #{limit_string} OFFSET #{offset_string})
+        UNION ALL
+          SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, p.body, p.age, p.hash, p.score_public, 
+            p.score_private, p.inserted_at, pr.depth + 1, path || #{sort_modifier} || p.id
+          FROM posts p, posts_r pr
           WHERE p.parent_id = pr.id AND p.parent_type != 'room'
-      )
+        )
       SELECT psr.id, psr.user_id_post, psr.room_id, psr.parent_id, psr.parent_type, psr.body, psr.age, psr.hash, 
         psr.score_public, psr.score_private, psr.inserted_at, psr.depth, psr.path, u.name
       FROM posts_r psr LEFT JOIN users u ON psr.user_id_post = u.id 
-      ORDER BY path LIMIT #{limit_string}
+      ORDER BY path LIMIT #{hard_limit}
     "
 
     res = Ecto.Adapters.SQL.query!(Repo, qry, [])

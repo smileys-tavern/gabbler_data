@@ -21,7 +21,9 @@ defmodule GabblerData.Behaviour.QueryModerating do
   @callback moderating?(%User{}, %Room{}) :: true | false
 
   @doc """
-  List a users room subscriptions
+  List a user or rooms moderation list
   """
   @callback list(%User{}, List) :: List
+
+  @callback list(%Room{}, List) :: List
 end

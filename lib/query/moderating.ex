@@ -24,6 +24,8 @@ defmodule GabblerData.Query.Moderating do
   end
 
   @impl true
+  def moderating?(%User{id: id}, %Room{user_id_creator: creator_id}) when id == creator_id, do: true
+
   def moderating?(%User{id: id}, %Room{id: room_id}) do
     case Repo.one(from [um] in UserModerating, where: um.user_id == ^id and um.room_id == ^room_id) do
       nil -> false
@@ -32,24 +34,38 @@ defmodule GabblerData.Query.Moderating do
   end
 
   @impl true
-  def list(%User{id: id} = user, opts) do
+  def list(%User{id: id}, opts) do
     query = UserModerating
     |> where([um], um.user_id == ^id)
 
-    list(query, user, opts)
+    list_opts(query, opts)
+  end
+
+  @impl true
+  def list(%Room{id: id}, opts) do
+    query = UserModerating
+    |> where([um], um.room_id == ^id)
+
+    list_opts(query, opts)
   end
 
   # PRIVATE FUNCTIONS
   ###################
-  defp list(query, _user, []), do: query |> Repo.all()
+  defp list_opts(query, []), do: query |> Repo.all()
 
-  defp list(query, user, [{:join, :room}|opts]) do
+  defp list_opts(query, [{:join, :room}|opts]) do
     join(query, :left, [um], r in Room, on: um.room_id == r.id)
     |> select([um, r], {um, r})
-    |> list(user, opts)
+    |> list_opts(opts)
   end
 
-  defp list(query, user, [{:limit, limit}|opts]) do
-    list(limit(query, ^limit), user, opts)
+  defp list_opts(query, [{:join, :user}|opts]) do
+    join(query, :left, [um], u in User, on: um.user_id == u.id)
+    |> select([um, u], {um, u})
+    |> list_opts(opts)
+  end
+
+  defp list_opts(query, [{:limit, limit}|opts]) do
+    list_opts(limit(query, ^limit), opts)
   end
 end

@@ -60,6 +60,16 @@ defmodule GabblerData.Behaviour.QueryPost do
   @callback increment_score(%Post{}, Integer, Integer) :: {:ok, %Post{}} | {:error, %{}}
 
   @doc """
+  Return amount of comments associated with a post (ok to return zero if non-top level post passed)
+  """
+  @callback comment_count(%Post{}) :: Integer
+
+  @doc """
+  Uses whatever pagination logic chosen to return the amount of pages of comments there are
+  """
+  @callback page_count(%Post{}) :: Integer
+
+  @doc """
   Return a posts recusive comment thread. Takes a parent post and atom representing the query mode.
   Recommendation: care not be it ugly as sin; optimize and cache as a priority.
   NOTE: the thread should be returned with a depth value for each comment to support the recursive

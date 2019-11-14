@@ -30,6 +30,8 @@ defmodule GabblerData.Query.Subscription do
       _ -> true
     end
   end
+  
+  def subscribed?(_, %Room{}), do: false
 
   @impl true
   def list(%User{id: id} = user, opts) do
