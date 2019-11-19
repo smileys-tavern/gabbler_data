@@ -40,7 +40,7 @@ defmodule GabblerData.Repo.Migrations.Init do
     create table(:posts) do
       add :user_id_post, :integer
       add :title, :string, size: 350
-      add :body, :string, size: 3800
+      add :body, :text
       add :room_id, :integer
       add :parent_id, :integer
       add :parent_type, :string
