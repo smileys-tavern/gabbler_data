@@ -11,8 +11,9 @@ defmodule GabblerData.Query.Room do
 
 
   @impl true
-  def get(id) when is_integer(id), do: Room |> Repo.get_by(id: id)
-  def get(name) when is_binary(name), do: Room |> Repo.get_by(name: name)
+  def get(id), do: Room |> Repo.get_by(id: id)
+  @impl true
+  def get_by_name(name), do: Room |> Repo.get_by(name: name)
 
   @impl true
   def list(_), do: []

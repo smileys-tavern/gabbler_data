@@ -10,8 +10,8 @@ defmodule GabblerData.Behaviour.QueryPost do
   @doc """
   Retrieve a single Post record by ID or Hash
   """
-  @callback get(Integer) :: %Post{} | nil
   @callback get(String.t) :: %Post{} | nil
+  @callback get_by_hash(String.t) :: %Post{} | nil
 
   @doc """
   Retrieve a list of posts. Expects a keyword list of options to constrain the results

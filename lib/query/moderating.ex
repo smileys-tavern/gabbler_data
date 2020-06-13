@@ -6,17 +6,17 @@ defmodule GabblerData.Query.Moderating do
 
   import Ecto.Query
 
-  alias GabblerData.{Repo, User, Room, UserModerating}
+  alias GabblerData.{Repo, Room, UserModerating}
 
 
   @impl true
-  def moderate(%User{id: id}, %Room{id: room_id}) do
+  def moderate(%{id: id}, %Room{id: room_id}) do
     UserModerating.changeset(%UserModerating{}, %{user_id: id, room_id: room_id, type: "mod"})
     |> Repo.insert()
   end
 
   @impl true
-  def remove_moderate(%User{id: id}, %Room{id: room_id}) do
+  def remove_moderate(%{id: id}, %Room{id: room_id}) do
     UserModerating
     |> Repo.get_by(user_id: id, room_id: room_id)
     |> UserModerating.changeset()
@@ -24,9 +24,9 @@ defmodule GabblerData.Query.Moderating do
   end
 
   @impl true
-  def moderating?(%User{id: id}, %Room{user_id_creator: creator_id}) when id == creator_id, do: true
+  def moderating?(%{id: id}, %Room{user_id: creator_id}) when id == creator_id, do: true
 
-  def moderating?(%User{id: id}, %Room{id: room_id}) do
+  def moderating?(%{id: id}, %Room{id: room_id}) do
     case Repo.one(from [um] in UserModerating, where: um.user_id == ^id and um.room_id == ^room_id) do
       nil -> false
       _ -> true
@@ -34,7 +34,7 @@ defmodule GabblerData.Query.Moderating do
   end
 
   @impl true
-  def list(%User{id: id}, opts) do
+  def list(%{id: id}, opts) do
     query = UserModerating
     |> where([um], um.user_id == ^id)
 
@@ -60,7 +60,9 @@ defmodule GabblerData.Query.Moderating do
   end
 
   defp list_opts(query, [{:join, :user}|opts]) do
-    join(query, :left, [um], u in User, on: um.user_id == u.id)
+    user = Application.get_env(:gabbler_data, :user)
+
+    join(query, :left, [um], u in ^user, on: um.user_id == u.id)
     |> select([um, u], {um, u})
     |> list_opts(opts)
   end

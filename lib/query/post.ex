@@ -19,8 +19,9 @@ defmodule GabblerData.Query.Post do
 
 
   @impl true
-  def get(hash) when is_binary(hash), do: Post |> Repo.get_by(hash: hash)
-  def get(id) when is_integer(id), do: Post |> Repo.get_by(id: id)
+  def get(id), do: Post |> Repo.get_by(id: id)
+  @impl true
+  def get_by_hash(hash), do: Post |> Repo.get_by(hash: hash)
 
   @impl true
   def list(opts), do: list(Post, opts)
@@ -45,7 +46,7 @@ defmodule GabblerData.Query.Post do
 
   @impl true
   def map_users(posts) do
-    Enum.reduce(posts, %{}, fn %{id: post_id, user_id_post: user_id}, acc -> 
+    Enum.reduce(posts, %{}, fn %{id: post_id, user_id: user_id}, acc -> 
       Map.put(acc, post_id, QueryUser.get(user_id))
     end)
   end
@@ -104,70 +105,101 @@ defmodule GabblerData.Query.Post do
   @impl true
   def thread(post, action, page \\ 1)
 
-  def thread(%Post{id: id}, :new, page) do
+  def thread(%Post{id: id}, mode, page) do
     thread_query(
-      Integer.to_string(id),
-      "(p.id * -1)::bigint", 
-      Integer.to_string(@thread_query_max), 
-      Integer.to_string((page - 1) * @thread_query_max))
-  end
-
-  def thread(%Post{id: id}, :focus, page) do
-    thread_query(
-      Integer.to_string(id), 
-      "(p.score_private * -1)::bigint", 
-      Integer.to_string(@thread_query_focus_max),
-      Integer.to_string((page - 1) * @thread_query_max))
-  end
-
-  def thread(%Post{id: id}, _, page) do 
-    thread_query(
-      Integer.to_string(id), 
-      "(p.score_private * -1)::bigint", 
-      Integer.to_string(@thread_query_max),
-      Integer.to_string((page - 1) * @thread_query_max))
+      id, 
+      Comment |> where(parent_id: ^id), 
+      [
+        mode: mode, 
+        limit: @thread_query_max, 
+        offset: (page - 1) * @thread_query_max
+      ]
+    )
   end
 
 
   # PRIVATE FUNCTIONS
   ###################
-  defp thread_query(post_id_string, sort_modifier, limit_string, offset_string) do
-    hard_limit = Integer.to_string(@thread_query_hard_limit)
+  defp thread_query(query, opts, level \\ 1)
 
-    qry = "
-      WITH RECURSIVE posts_r(id, user_id_post, room_id, parent_id, parent_type, body, age, hash, score_public, 
-        score_private, inserted_at, depth, path) AS (
-          (SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, body, age, hash, score_public, 
-            score_private, inserted_at, 1, ARRAY[#{sort_modifier}, p.id]
-          FROM posts p
-          WHERE p.parent_id = #{post_id_string} AND p.parent_type != 'room'
-          LIMIT #{limit_string} OFFSET #{offset_string})
-        UNION ALL
-          SELECT p.id, p.user_id_post, p.room_id, p.parent_id, p.parent_type, p.body, p.age, p.hash, p.score_public, 
-            p.score_private, p.inserted_at, pr.depth + 1, path || #{sort_modifier} || p.id
-          FROM posts p, posts_r pr
-          WHERE p.parent_id = pr.id AND p.parent_type != 'room'
-        )
-      SELECT psr.id, psr.user_id_post, psr.room_id, psr.parent_id, psr.parent_type, psr.body, psr.age, psr.hash, 
-        psr.score_public, psr.score_private, psr.inserted_at, psr.depth, psr.path, u.name
-      FROM posts_r psr LEFT JOIN users u ON psr.user_id_post = u.id 
-      ORDER BY path LIMIT #{hard_limit}
-    "
+  defp thread_query(query, [{offset: offset}|opts], level), do: query
+  |> offset(offset)
+  |> thread_query(opts, level)
 
-    res = Ecto.Adapters.SQL.query!(Repo, qry, [])
+  defp thread_query(query, [{limit: limit}|opts], level), do: query
+  |> offset(offset)
+  |> thread_query(opts, level)
 
-    cols = Enum.map res.columns, &(String.to_atom(&1))
+  defp thread_query(query, [{mode: :new}|opts], level), do: query
+  |> order_by(inserted_at: :desc)
+  |> thread_query(opts, level)
 
-    Enum.map(res.rows, fn row ->
-      # Comment is a Post like struct but gives us some flexibility to differentiate
-      struct(Comment, Enum.zip(cols, row))
-    end)
+  defp thread_query(query, [{mode: _}|opts], level), do: query
+  |> order_by(score_private: :desc)
+  |> thread_query(opts, level)
+
+  defp thread_query(query, [], level) do
+    user = Application.get_env(:gabbler_data, :user)
+
+    query
+    |> join(:left, [c], u in ^user, on: c.user_id == u.id)
+    |> select([c, u], %{
+      id: c.id,
+      user_id: c.user_id, 
+      room_id: c.room_id,
+      parent_id: c.parent_id,
+      parent_type: c.parent_type,
+      body: c.body,
+      age: c.age,
+      hash: c.hash,
+      score_public: c.score_public, 
+      inserted_at: c.inserted_at,
+      depth: ^level, 
+      name: u.name
+    })
+    |> Repo.all()
   end
+
+  # Deprecated but never dead. <3 thanks faithful query
+  #defp thread_query(post_id_string, sort_modifier, limit_string, offset_string) do
+  #  hard_limit = Integer.to_string(@thread_query_hard_limit)
+  #  user_table = Application.get_env(:gabbler_data, :user).__schema__(:source)
+  #
+  # TODO: will refactor to something less fun but easier to cache in multiple batches
+  # qry = "
+  #    WITH RECURSIVE posts_r(id, user_id, room_id, parent_id, parent_type, body, age, hash, score_public, 
+  #      score_private, inserted_at, depth, path) AS (
+  #        (SELECT p.id, p.user_id, p.room_id, p.parent_id, p.parent_type, body, age, hash, score_public, 
+  #          score_private, inserted_at, 1, ARRAY[#{sort_modifier}, EXTRACT(epoch FROM p.inserted_at)::bigint]
+  #        FROM posts p
+  #        WHERE p.parent_id = '#{post_id_string}' AND p.parent_type != 'room'
+  #        LIMIT #{limit_string} OFFSET #{offset_string})
+  #      UNION ALL
+  #        SELECT p.id, p.user_id, p.room_id, p.parent_id, p.parent_type, p.body, p.age, p.hash, p.score_public, 
+  #          p.score_private, p.inserted_at, pr.depth + 1, path || #{sort_modifier} || EXTRACT(epoch FROM p.inserted_at)::bigint
+  #        FROM posts p, posts_r pr
+  #        WHERE p.parent_id = pr.id AND p.parent_type != 'room'
+  #      )
+  #    SELECT psr.id, psr.user_id, psr.room_id, psr.parent_id, psr.parent_type, psr.body, psr.age, psr.hash, 
+  #      psr.score_public, psr.score_private, psr.inserted_at, psr.depth, psr.path, u.name
+  #    FROM posts_r psr LEFT JOIN #{user_table} u ON psr.user_id = u.id 
+  #    ORDER BY path LIMIT #{hard_limit}
+  #  "
+  #
+  #  res = Ecto.Adapters.SQL.query!(Repo, qry, [])
+  #
+  #  cols = Enum.map res.columns, &(String.to_atom(&1))
+  #
+  #  Enum.map(res.rows, fn row ->
+      # Comment is a Post like struct but gives us some flexibility to differentiate
+  #    struct(Comment, Enum.zip(cols, row))
+  #  end)
+  #end
 
   defp list(query, []), do: query |> Repo.all()
 
   defp list(query, [{:by_user, id}|opts]) do
-    list(where(query, user_id_post: ^id), opts)
+    list(where(query, user_id: ^id), opts)
   end
 
   defp list(query, [{:by_room, id}|opts]) do

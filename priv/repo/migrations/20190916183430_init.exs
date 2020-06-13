@@ -2,26 +2,10 @@ defmodule GabblerData.Repo.Migrations.Init do
   use Ecto.Migration
 
   def change do
-    # USERS
-    create table(:users) do
-      add :name, :string
-      add :email, :string
-      add :password_hash, :string
-      add :confirmation_token, :string
-      add :confirmed_at, :timestamptz
-      add :confirmation_sent_at, :timestamptz
-      add :reputation, :integer
-      add :gifts, :integer
-      add :moderating, {:array, :map}
-      
-      timestamps(type: :timestamptz)
-    end
-    create unique_index(:users, [:name])
-    create unique_index(:users, [:email])
-
     # ROOMS
-    create table(:rooms) do
-      add :user_id_creator, :integer
+    create table(:rooms, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :user_id, :binary_id
       add :name, :string
       add :title, :string
       add :description, :string
@@ -33,16 +17,17 @@ defmodule GabblerData.Repo.Migrations.Init do
     end
     create unique_index(:rooms, [:name])
     create index(:rooms, [:type])
-    create index(:rooms, [:user_id_creator])
+    create index(:rooms, [:user_id])
     create index(:rooms, [:age])
 
     # POSTS
-    create table(:posts) do
-      add :user_id_post, :integer
+    create table(:posts, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :user_id, :binary_id
       add :title, :string, size: 350
       add :body, :text
-      add :room_id, :integer
-      add :parent_id, :integer
+      add :room_id, :binary_id
+      add :parent_id, :binary_id
       add :parent_type, :string
       add :age, :integer
       add :hash, :string
@@ -52,7 +37,7 @@ defmodule GabblerData.Repo.Migrations.Init do
 
       timestamps(type: :timestamptz)
     end
-    create index(:posts, [:user_id_post])
+    create index(:posts, [:user_id])
     create index(:posts, [:score_public])
     create index(:posts, [:score_private])
     create index(:posts, [:score_alltime])
@@ -63,8 +48,8 @@ defmodule GabblerData.Repo.Migrations.Init do
     create index(:posts, [:parent_type, :parent_id])
 
     create table(:post_metas) do
-      add :user_id, :integer
-      add :post_id, :integer
+      add :user_id, :binary_id
+      add :post_id, :binary_id
       add :link, :string
       add :image, :string
       add :thumb, :string
@@ -78,7 +63,7 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     create table(:anonymous_posts) do
       add :hash, :string
-      add :post_id, :int
+      add :post_id, :binary_id
 
       timestamps(type: :timestamptz)
     end
@@ -87,8 +72,8 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # VOTES
     create table(:votes) do
-      add :user_id, :integer
-      add :post_id, :integer
+      add :user_id, :binary_id
+      add :post_id, :binary_id
       add :vote, :integer
 
       timestamps(type: :timestamptz)
@@ -98,8 +83,8 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # MODERATOR LISTINGS
     create table(:user_moderating) do
-      add :user_id, :integer
-      add :room_id, :integer
+      add :user_id, :binary_id
+      add :room_id, :binary_id
       add :type, :string
 
       timestamps(type: :timestamptz)
@@ -109,8 +94,8 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # USER SUBSCRIPTIONS
     create table(:user_subscriptions) do
-      add :user_id, :integer
-      add :room_id, :integer
+      add :user_id, :binary_id
+      add :room_id, :binary_id
       add :type, :string
 
       timestamps(type: :timestamptz)
@@ -120,8 +105,8 @@ defmodule GabblerData.Repo.Migrations.Init do
 
     # USER ROOM ALLOWS
     create table(:user_room_allows) do
-      add :user_id, :integer
-      add :room_id, :integer
+      add :user_id, :binary_id
+      add :room_id, :binary_id
 
       timestamps(type: :timestamptz)
     end
@@ -131,7 +116,7 @@ defmodule GabblerData.Repo.Migrations.Init do
     # REGISTERED BOTS
     create table(:registered_bots) do
       add :name, :string
-      add :user_id, :integer
+      add :user_id, :binary_id
       add :type, :string
       add :callback_module, :string
 

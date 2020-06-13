@@ -2,8 +2,8 @@ defmodule GabblerData.UserAllow do
   use GabblerData.Data, :model
 
   schema "user_allows" do
-    field :user_id, :integer
-    field :room_id, :integer
+    field :user_id, :binary_id
+    field :room_id, :binary_id
 
     timestamps(type: :utc_datetime)
   end

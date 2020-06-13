@@ -2,8 +2,8 @@ defmodule GabblerData.UserModerating do
   use GabblerData.Data, :model
 
   schema "user_moderating" do
-    field :user_id, :integer
-    field :room_id, :integer
+    field :user_id, :binary_id
+    field :room_id, :binary_id
     field :type, :string
 
     timestamps(type: :utc_datetime)

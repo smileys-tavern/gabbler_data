@@ -6,17 +6,17 @@ defmodule GabblerData.Query.Subscription do
 
   import Ecto.Query
 
-  alias GabblerData.{Repo, User, Room, UserSubscription}
+  alias GabblerData.{Repo, Room, UserSubscription}
 
 
   @impl true
-  def subscribe(%User{id: id}, %Room{id: room_id}) do
+  def subscribe(%{id: id}, %Room{id: room_id}) do
     UserSubscription.changeset(%UserSubscription{}, %{user_id: id, room_id: room_id, type: "sub"})
     |> Repo.insert()
   end
 
   @impl true
-  def unsubscribe(%User{id: id}, %Room{id: room_id}) do
+  def unsubscribe(%{id: id}, %Room{id: room_id}) do
     UserSubscription
     |> Repo.get_by(user_id: id, room_id: room_id)
     |> UserSubscription.changeset()
@@ -24,7 +24,7 @@ defmodule GabblerData.Query.Subscription do
   end
 
   @impl true
-  def subscribed?(%User{id: id}, %Room{id: room_id}) do
+  def subscribed?(%{id: id}, %Room{id: room_id}) do
     case Repo.one(from s in UserSubscription, where: s.user_id == ^id and s.room_id == ^room_id) do
       nil -> false
       _ -> true
@@ -34,7 +34,7 @@ defmodule GabblerData.Query.Subscription do
   def subscribed?(_, %Room{}), do: false
 
   @impl true
-  def list(%User{id: id} = user, opts) do
+  def list(%{id: id} = user, opts) do
     query = UserSubscription
     |> where([us], us.user_id == ^id)
 

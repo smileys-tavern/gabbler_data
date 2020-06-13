@@ -1,9 +1,11 @@
 defmodule GabblerData.RegisteredBot do
   use GabblerData.Data, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "registered_bots" do
     field :name, :string
-    field :user_id, :integer
+    field :user_id, :binary_id
     field :type, :string
     field :callback_module, :string
 

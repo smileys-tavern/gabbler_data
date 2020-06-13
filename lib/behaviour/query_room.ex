@@ -9,8 +9,8 @@ defmodule GabblerData.Behaviour.QueryRoom do
   @doc """
   Retrieve a single Room record by ID or Name
   """
-  @callback get(Integer) :: %Room{} | nil
   @callback get(String.t) :: %Room{} | nil
+  @callback get_by_name(String.t) :: %Room{} | nil
 
   @doc """
   Retrieve a list of rooms. Expects a keyword list of options to constrain the results

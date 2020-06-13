@@ -3,7 +3,7 @@ defmodule GabblerData.AnonymousPost do
 
   schema "anonymous_posts" do
     field :hash, :string
-    field :post_id, :integer
+    field :post_id, :binary_id
     
     timestamps(type: :utc_datetime)
   end

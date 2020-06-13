@@ -2,7 +2,7 @@ defmodule GabblerData.RegisteredBotMeta do
   use GabblerData.Data, :model
 
   schema "registered_bot_metas" do
-    field :bot_id, :string
+    field :bot_id, :binary_id
     field :type, :string
     field :meta, :string
 

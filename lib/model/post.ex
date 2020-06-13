@@ -1,12 +1,14 @@
 defmodule GabblerData.Post do
   use GabblerData.Data, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "posts" do
-    field :user_id_post, :integer
+    field :user_id, :binary_id
     field :title, :string
     field :body, :string
-    field :room_id, :integer
-    field :parent_id, :integer
+    field :room_id, :binary_id
+    field :parent_id, :binary_id
     field :parent_type, :string
     field :age, :integer
     field :hash, :string
@@ -20,9 +22,9 @@ defmodule GabblerData.Post do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [
-      :user_id_post, :title, :body, :room_id, :parent_id, :parent_type, 
+      :user_id, :title, :body, :room_id, :parent_id, :parent_type, 
       :age, :hash, :score_public, :score_private, :score_alltime])
-    |> validate_required([:user_id_post, :title], [:trim])
+    |> validate_required([:user_id, :title], [:trim])
     |> validate_length(:title, min: 2)
     |> validate_length(:title, max: 350)
     |> validate_format(:title, ~r/^[a-zA-Z0-9 \-\–\.,\/'’‘%|?!:\)\(#&;]+$/)
@@ -34,10 +36,10 @@ defmodule GabblerData.Post do
     [
       %GabblerData.Post{
         id: 1,
-        user_id_post: 1,
+        user_id: "1",
         title: "Hello World, I am a test post",
         body: "I am the body of the post saying hello to the world",
-        room_id: 1,
+        room_id: "1",
         parent_id: 1,
         parent_type: "room",
         age: 0,
@@ -49,7 +51,7 @@ defmodule GabblerData.Post do
       },
       %GabblerData.Post{
         id: 2,
-        user_id_post: 1,
+        user_id: "1",
         title: "Hello World, I am a test post",
         body: "I am the body of the post saying hello to the world",
         room_id: 1,
@@ -64,7 +66,7 @@ defmodule GabblerData.Post do
       },
       %GabblerData.Post{
         id: 3,
-        user_id_post: 1,
+        user_id: "1",
         title: "Hello World, I am a test post",
         body: "I am the body of the post saying hello to the world",
         room_id: 1,

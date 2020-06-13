@@ -2,8 +2,8 @@ defmodule GabblerData.Vote do
   use GabblerData.Data, :model
 
   schema "votes" do
-    field :user_id, :integer
-    field :post_id, :integer
+    field :user_id, :binary_id
+    field :post_id, :binary_id
     field :vote, :string
 
     timestamps(type: :utc_datetime)

@@ -1,9 +1,11 @@
 defmodule GabblerData.Room do
   use GabblerData.Data, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "rooms" do
     field :name, :string
-    field :user_id_creator, :integer
+    field :user_id, :binary_id
     field :title, :string
     field :description, :string
     field :reputation, :integer
@@ -18,9 +20,9 @@ defmodule GabblerData.Room do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:name, :user_id_creator, :title, :description, :type, :age, :reputation])
+    |> cast(params, [:name, :user_id, :title, :description, :type, :age, :reputation])
     |> unique_constraint(:name)
-    |> validate_required([:name, :user_id_creator, :title, :description, :type, :age, :reputation])
+    |> validate_required([:name, :user_id, :title, :description, :type, :age, :reputation])
     |> validate_length(:name, min: 2)
     |> validate_length(:name, max: 44)
     |> validate_format(:name, ~r/^[a-zA-Z0-9_]+$/)
