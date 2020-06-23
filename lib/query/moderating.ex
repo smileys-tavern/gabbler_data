@@ -34,17 +34,17 @@ defmodule GabblerData.Query.Moderating do
   end
 
   @impl true
-  def list(%{id: id}, opts) do
+  def list(%Room{id: id}, opts) do
     query = UserModerating
-    |> where([um], um.user_id == ^id)
+    |> where([um], um.room_id == ^id)
 
     list_opts(query, opts)
   end
 
   @impl true
-  def list(%Room{id: id}, opts) do
+  def list(%{id: id}, opts) do
     query = UserModerating
-    |> where([um], um.room_id == ^id)
+    |> where([um], um.user_id == ^id)
 
     list_opts(query, opts)
   end

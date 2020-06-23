@@ -14,8 +14,6 @@ defmodule GabblerData.Query.Post do
   alias GabblerData.Repo
 
   @thread_query_max 20
-  @thread_query_focus_max 20
-  @thread_query_hard_limit 50
 
 
   @impl true
@@ -103,39 +101,38 @@ defmodule GabblerData.Query.Post do
     |> ceil()
   
   @impl true
-  def thread(post, action, page \\ 1)
+  def thread(post, mode, page \\ 1, level \\ 1, opts \\ [])
 
-  def thread(%Post{id: id}, mode, page) do
+  def thread(%{id: id}, mode, page, level, opts) do
     thread_query(
-      id, 
       Comment |> where(parent_id: ^id), 
       [
-        mode: mode, 
-        limit: @thread_query_max, 
-        offset: (page - 1) * @thread_query_max
-      ]
-    )
+        {:mode, mode}, 
+        {:limit, @thread_query_max},
+        {:offset, (page - 1) * @thread_query_max} | opts
+      ],
+      level
+    ) 
+    |> Repo.all()
   end
 
 
   # PRIVATE FUNCTIONS
   ###################
-  defp thread_query(query, opts, level \\ 1)
-
-  defp thread_query(query, [{offset: offset}|opts], level), do: query
-  |> offset(offset)
+  defp thread_query(query, [{:offset, offset}|opts], level), do: query
+  |> offset(^offset)
   |> thread_query(opts, level)
 
-  defp thread_query(query, [{limit: limit}|opts], level), do: query
-  |> offset(offset)
+  defp thread_query(query, [{:limit, limit}|opts], level), do: query
+  |> limit(^limit)
   |> thread_query(opts, level)
 
-  defp thread_query(query, [{mode: :new}|opts], level), do: query
-  |> order_by(inserted_at: :desc)
+  defp thread_query(query, [{:mode, :new}|opts], level), do: query
+  |> order_by([c], desc: c.inserted_at)
   |> thread_query(opts, level)
 
-  defp thread_query(query, [{mode: _}|opts], level), do: query
-  |> order_by(score_private: :desc)
+  defp thread_query(query, [{:mode, _}|opts], level), do: query
+  |> order_by([c], desc: c.score_private)
   |> thread_query(opts, level)
 
   defp thread_query(query, [], level) do
@@ -154,13 +151,12 @@ defmodule GabblerData.Query.Post do
       hash: c.hash,
       score_public: c.score_public, 
       inserted_at: c.inserted_at,
-      depth: ^level, 
+      depth: type(^level, :integer), 
       name: u.name
     })
-    |> Repo.all()
   end
 
-  # Deprecated but never dead. <3 thanks faithful query
+  # Deprecate.. sweet query.. but your work never forgotten
   #defp thread_query(post_id_string, sort_modifier, limit_string, offset_string) do
   #  hard_limit = Integer.to_string(@thread_query_hard_limit)
   #  user_table = Application.get_env(:gabbler_data, :user).__schema__(:source)
