@@ -5,7 +5,10 @@ defmodule GabblerData.Query.Room do
   """
   @behaviour GabblerData.Behaviour.QueryRoom
 
+  import Ecto.Query
+
   alias GabblerData.Room
+  alias GabblerData.RoomBan
 
   alias GabblerData.Repo
 
@@ -26,4 +29,30 @@ defmodule GabblerData.Query.Room do
 
   @impl true
   def update(changeset), do: Repo.update(changeset)
+
+  # Banning functionality
+
+  @impl true
+  def ban_for_life(id, user_id) do
+    RoomBan.changeset(%RoomBan{:room_id => id, :user_id => user_id})
+    |> Repo.insert()
+  end
+
+  @impl true
+  def unban(id, user_id) do
+    RoomBan.changeset(%RoomBan{:room_id => id, :user_id => user_id})
+    |> Repo.delete()
+  end
+
+  @impl true
+  def banned?(id, user_id) do
+    result = RoomBan
+    |> where(room_id: ^id, user_id: ^user_id)
+    |> Repo.one()
+
+    case result do
+      nil -> false
+      _ -> true
+    end
+  end
 end

@@ -5,6 +5,7 @@ defmodule GabblerData.Behaviour.QueryRoom do
   should be used as a dependency by any data library wishing to implement Gabbler's room functionality.
   """
   alias GabblerData.Room
+  alias GabblerData.RoomBan
 
   @doc """
   Retrieve a single Room record by ID or Name
@@ -32,4 +33,16 @@ defmodule GabblerData.Behaviour.QueryRoom do
   Update a Room
   """
   @callback update(%Room{}) :: {:ok, %Room{}} | {:error, %{}}
+
+  @doc """
+  Permanently ban a user from a room. Takes a room id and a user id
+  """
+  @callback ban_for_life(String.t, String.t) :: {:ok, %RoomBan{}} | {:error, %{}}
+
+  @doc """
+  Unban a user despite it being a permanent ban
+  """
+  @callback unban(String.t, String.t) :: {:ok, %RoomBan{}} | {:error, %{}}
+
+  @callback banned?(String.t, String.t) :: true | false
 end
