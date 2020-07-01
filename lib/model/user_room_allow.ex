@@ -15,6 +15,6 @@ defmodule GabblerData.UserRoomAllow do
     struct
     |> cast(params, [:user_id, :room_id])
     |> validate_required([:user_id, :room_id])
-    |> unique_constraint(:user_id, :user_room_allows_user_id_room_id_index)
+    |> unique_constraint([:user_id, :room_id], :user_room_allows)
   end
 end

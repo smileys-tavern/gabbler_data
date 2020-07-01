@@ -4,8 +4,7 @@ defmodule GabblerData.Behaviour.QueryRoom do
   set of behaviors must be implemented by the data dependency for querying Rooms. This behavior
   should be used as a dependency by any data library wishing to implement Gabbler's room functionality.
   """
-  alias GabblerData.Room
-  alias GabblerData.RoomBan
+  alias GabblerData.{Room, UserRoomAllow, RoomBan}
 
   @doc """
   Retrieve a single Room record by ID or Name
@@ -45,4 +44,13 @@ defmodule GabblerData.Behaviour.QueryRoom do
   @callback unban(String.t, String.t) :: {:ok, %RoomBan{}} | {:error, %{}}
 
   @callback banned?(String.t, String.t) :: true | false
+
+  @doc """
+  Check to see if user is in an allow list for (assumadely) private rooms
+  """
+  @callback allow_list?(String.t, String.t) :: true | false
+
+  @callback add_to_allow_list(String.t, String.t) :: {:ok, %UserRoomAllow{}} | {:error, %{}}
+
+  @callback remove_from_allow_list(String.t, String.t) :: {:ok, %UserRoomAllow{}} | {:error, %{}}
 end

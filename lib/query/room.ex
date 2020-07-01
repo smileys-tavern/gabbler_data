@@ -7,10 +7,7 @@ defmodule GabblerData.Query.Room do
 
   import Ecto.Query
 
-  alias GabblerData.Room
-  alias GabblerData.RoomBan
-
-  alias GabblerData.Repo
+  alias GabblerData.{Room, UserRoomAllow, RoomBan, Repo}
 
 
   @impl true
@@ -35,18 +32,42 @@ defmodule GabblerData.Query.Room do
   @impl true
   def ban_for_life(id, user_id) do
     RoomBan.changeset(%RoomBan{:room_id => id, :user_id => user_id})
-    |> Repo.insert()
+    |> Repo.insert(returning: false)
   end
 
   @impl true
   def unban(id, user_id) do
     RoomBan.changeset(%RoomBan{:room_id => id, :user_id => user_id})
-    |> Repo.delete()
+    |> Repo.delete(returning: false)
   end
 
   @impl true
   def banned?(id, user_id) do
     result = RoomBan
+    |> where(room_id: ^id, user_id: ^user_id)
+    |> Repo.one()
+
+    case result do
+      nil -> false
+      _ -> true
+    end
+  end
+
+  @impl true
+  def add_to_allow_list(id, user_id) do
+    UserRoomAllow.changeset(%UserRoomAllow{:room_id => id, :user_id => user_id})
+    |> Repo.insert(returning: false)
+  end
+
+  @impl true
+  def remove_from_allow_list(id, user_id) do
+    UserRoomAllow.changeset(%UserRoomAllow{:room_id => id, :user_id => user_id})
+    |> Repo.delete(returning: false)
+  end
+
+  @impl true
+  def allow_list?(id, user_id) do
+    result = UserRoomAllow
     |> where(room_id: ^id, user_id: ^user_id)
     |> Repo.one()
 
