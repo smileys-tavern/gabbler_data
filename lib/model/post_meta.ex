@@ -8,6 +8,7 @@ defmodule GabblerData.PostMeta do
     field :image, :string
     field :thumb, :string
     field :tags, :string
+    field :comments, :integer, virtual: true
 
     timestamps(type: :utc_datetime)
   end

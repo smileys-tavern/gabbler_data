@@ -13,6 +13,7 @@ defmodule GabblerData.Comment do
     field :age, :integer
     field :hash, :string
     field :hash_op, :string, virtual: true
+    field :comments, :integer, virtual: true
     field :score_public, :integer
     field :score_private, :integer
     field :score_alltime, :integer
