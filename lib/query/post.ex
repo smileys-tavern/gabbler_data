@@ -55,10 +55,18 @@ defmodule GabblerData.Query.Post do
   def get_story_images(%PostMeta{image: story_hash}) when is_binary(story_hash) do
     StoryImage
     |> where(story_hash: ^story_hash)
+    |> order_by([s], asc: s.story_order)
     |> Repo.all()
   end
 
   def get_story_images(_), do: []
+
+  @impl true
+  def update_story_image_order(public_id, i) do
+    StoryImage
+    |> where(public_id: ^public_id)
+    |> Repo.update_all(set: [story_order: i])
+  end
 
   @impl true
   def create(changeset, changeset_meta) do

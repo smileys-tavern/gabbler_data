@@ -55,6 +55,11 @@ defmodule GabblerData.Behaviour.QueryPost do
   @callback delete_story_image(String.t) :: {:ok, %{}}
 
   @doc """
+  Update the display order of a story image
+  """
+  @callback update_story_image_order(String.t, Integer) :: {:ok, %StoryImage{}} | {:error, %{}}
+
+  @doc """
   Create a reply, which is a subset of Post and has different field requirements
   """
   @callback create_reply(%{}) :: {:ok, %Post{}} | {:error, %{}}

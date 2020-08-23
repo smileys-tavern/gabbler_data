@@ -7,12 +7,14 @@ defmodule GabblerData.Repo.Migrations.StoryImages do
       add :story_hash, :string
       add :url, :string
       add :thumb, :string
+      add :story_order, :integer
 
       timestamps(type: :timestamptz)
     end
 
     create index(:story_images, [:story_hash])
+    create index(:story_images, [:story_order])
   end
 
-  
+
 end
