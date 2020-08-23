@@ -5,13 +5,14 @@ defmodule GabblerData.Behaviour.QueryPost do
   simpler post, giving the recursive structure of the application. Post also covers Post Meta which associated
   with posts (all Posts have meta information attached)
   """
-  alias GabblerData.{Post, PostMeta}
+  alias GabblerData.{Post, PostMeta, StoryImage}
 
   @doc """
   Retrieve a single Post record by ID or Hash
   """
   @callback get(String.t) :: %Post{} | nil
   @callback get_by_hash(String.t) :: %Post{} | nil
+  @callback get_meta(%Post{}) :: %PostMeta{} | nil
 
   @doc """
   Retrieve a list of posts. Expects a keyword list of options to constrain the results
@@ -34,9 +35,24 @@ defmodule GabblerData.Behaviour.QueryPost do
   @callback map_users([%Post{}]) :: %{}
 
   @doc """
+  Retrieve stories for a post
+  """
+  @callback get_story_images(%PostMeta{}) :: [%StoryImage{}]
+
+  @doc """
   Create a Post using the Post and PostMeta changesets.
   """
   @callback create(%{}, %{}) :: {:ok, {%Post{}, %PostMeta{}}} | {:error, %{}}
+
+  @doc """
+  Create a story image associated with a post
+  """
+  @callback create_story_image(%{}) :: {:ok, %StoryImage{}} | {:error, %{}}
+
+  @doc """
+  Delete a stories image by it's public id
+  """
+  @callback delete_story_image(String.t) :: {:ok, %{}}
 
   @doc """
   Create a reply, which is a subset of Post and has different field requirements

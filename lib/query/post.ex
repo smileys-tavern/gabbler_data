@@ -7,7 +7,7 @@ defmodule GabblerData.Query.Post do
 
   import Ecto.Query
 
-  alias GabblerData.{Post, Room, PostMeta, Comment}
+  alias GabblerData.{Post, Room, PostMeta, Comment, StoryImage}
   alias GabblerData.Query.Room, as: QueryRoom
   alias GabblerData.Query.User, as: QueryUser
 
@@ -20,6 +20,8 @@ defmodule GabblerData.Query.Post do
   def get(id), do: Post |> Repo.get_by(id: id)
   @impl true
   def get_by_hash(hash), do: Post |> Repo.get_by(hash: hash)
+  @impl true
+  def get_meta(%Post{id: id}), do: PostMeta |> Repo.get_by(post_id: id)
 
   @impl true
   def list(opts), do: list(Post, opts)
@@ -48,6 +50,15 @@ defmodule GabblerData.Query.Post do
       Map.put(acc, post_id, QueryUser.get(user_id))
     end)
   end
+
+  @impl true
+  def get_story_images(%PostMeta{image: story_hash}) when is_binary(story_hash) do
+    StoryImage
+    |> where(story_hash: ^story_hash)
+    |> Repo.all()
+  end
+
+  def get_story_images(_), do: []
 
   @impl true
   def create(changeset, changeset_meta) do
@@ -116,6 +127,15 @@ defmodule GabblerData.Query.Post do
     |> Repo.all()
   end
 
+  @impl true
+  def create_story_image(changeset), do: Repo.insert(changeset, returning: [:public_id])
+
+  @impl true
+  def delete_story_image(public_id) do
+    StoryImage
+    |> where(public_id: ^public_id)
+    |> Repo.delete_all()
+  end
 
   # PRIVATE FUNCTIONS
   ###################

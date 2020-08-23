@@ -24,7 +24,7 @@ defmodule GabblerData.PostMeta do
 
   def mock_data() do
     %{
-      1 => %GabblerData.PostMeta{user_id: "1", post_id: "1", thumb: "img01.deviantart.net/c6fd/i/2009/342/8/4/final_fantasy_white_mage_lego_by_drsparc.jpg"},
+      1 => %GabblerData.PostMeta{user_id: "1", post_id: "1", thumb: "//img01.deviantart.net/c6fd/i/2009/342/8/4/final_fantasy_white_mage_lego_by_drsparc.jpg"},
       2 => %GabblerData.PostMeta{user_id: "1", post_id: "1", tags: "test tag, tag two"},
       3 => %GabblerData.PostMeta{user_id: "1", post_id: "1", link: "https://test.com"}
     }
